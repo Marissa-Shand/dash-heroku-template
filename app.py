@@ -9,10 +9,8 @@ from jupyter_dash import JupyterDash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-from dash import Dash
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-#%%capture
 gss = pd.read_csv("https://github.com/jkropko/DS-6001/raw/master/localdata/gss2018.csv",
                  encoding='cp1252', na_values=['IAP','IAP,DK,NA,uncodeable', 'NOT SURE',
                                                'DK', 'IAP, DK, NA, uncodeable', '.a', "CAN'T CHOOSE"])
@@ -53,7 +51,6 @@ table_sex.columns = ['Sex', 'Avg. Income', 'Avg. Occupational Prestige', 'Avg. S
 
 ## Format the table in an interactive and web-enabled way
 table_sex = ff.create_table(table_sex)
-table_sex.show()
 
 ## Produce a crosstab between sex and male_breadwinner to show levels of agreement
 gss_breadwinner = pd.crosstab(gss_clean.sex, gss_clean.male_breadwinner).reset_index()
@@ -68,7 +65,6 @@ fig_bar = px.bar(gss_breadwinner, x = 'male_breadwinner', y = 'value', color = '
             color_discrete_map = {'male':'green', 'female':'mediumpurple'})
 fig_bar.update_layout(showlegend = True)
 fig_bar.update(layout = dict(title = dict(x = 0.5)))
-fig_bar.show()
 
 ## Create an interactive scatterplot
 fig_scatter = px.scatter(gss_clean, x = 'job_prestige', y = 'income', color = 'sex',
@@ -77,21 +73,18 @@ fig_scatter = px.scatter(gss_clean, x = 'job_prestige', y = 'income', color = 's
                  hover_data = ['education', 'socioeconomic_index'],
                  color_discrete_map = {'male':'green', 'female':'mediumpurple'})
 fig_scatter.update(layout = dict(title = dict(x = 0.5)))
-fig_scatter.show()
 
 ## Create an interactive box plot for income of men and women
 fig_box_income = px.box(gss_clean, x = 'income', y = 'sex', color = 'sex',
              labels = {'income': 'Income', 'sex': ''},
              color_discrete_map = {'male':'green', 'female':'mediumpurple'})
 fig_box_income.update_layout(showlegend = False)
-fig_box_income.show()
 
 ## Create an interactive box plot for job_prestige of men and women
 fig_box_prestige = px.box(gss_clean, x = 'job_prestige', y = 'sex', color = 'sex',
              labels = {'job_prestige': 'Occupational Prestige', 'sex': ''},
              color_discrete_map = {'male':'green', 'female':'mediumpurple'})
 fig_box_prestige.update_layout(showlegend = False)
-fig_box_prestige.show()
 
 ## Create a new dataframe that contains only income, sex, and job_prestige
 gss_facet = gss_clean[['income', 'sex', 'job_prestige']]
@@ -109,21 +102,24 @@ fig_box_facet = px.box(gss_facet, x = 'income', y = 'sex', color = 'sex',
               labels = {'income': 'Income', 'sex': ''})
 fig_box_facet.update_layout(showlegend = False)
 fig_box_facet.for_each_annotation(lambda a: a.update(text = a.text.replace("prestige_bins=", "")))
-fig_box_facet.show()
 
 ## Options for interative bar plot
 options1 = gss_clean[['satjob', 'relationship', 'male_breadwinner', 'men_bettersuited', 'child_suffer', 'men_overwork']]
 options2 = gss_clean[['sex', 'region', 'education']]
+
+## There are so many levels of education, let's limit this
+options2.education = options2.education.astype('category')
+options2 = options2.assign(education = pd.cut(gss_clean['education'],
+                                                bins = [-0.1, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 100.0],
+                                                labels = ('10 years or fewer', '11 years', '12 years', '13 years', '14 years', '15 years', '16 years', 'More than 16 years')))
 
 ## Create an interactive box plot for education of men and women
 fig_box_educ = px.box(gss_clean, x = 'education', y = 'sex', color = 'sex',
              labels = {'education': 'Years of Education', 'sex': ''},
              color_discrete_map = {'male':'green', 'female':'mediumpurple'}, height = 400)
 fig_box_educ.update_layout(showlegend = False)
-fig_box_educ.show()
 
-app = Dash(__name__, external_stylesheets = external_stylesheets)
-server = app.server
+app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
 
 app.layout = html.Div(
     [
@@ -172,7 +168,7 @@ app.layout = html.Div(
             
             dcc.Graph(figure=fig_box_income)
             
-        ], style = {'height': 1000, 'width':'48%', 'float':'left'}),
+        ], style = {'height': 1000, 'width':'50%', 'float':'left'}),
         
         html.Div([
             
@@ -186,7 +182,7 @@ app.layout = html.Div(
             
             
             
-        ], style = {'height': 1000, 'width':'48%', 'float':'right'}),
+        ], style = {'height': 1000, 'width':'50%', 'float':'right'}),
         
         html.H3("Distribution of Income for Different Levels of Job Prestige by Sex"),
         
@@ -204,7 +200,7 @@ def make_figure(x, color):
     ## {'very dissatisfied', 'a little dissat', 'mod. satisfied', 'very satisfied'} = satjob
     if x in ['satjob']:
         bar = px.bar(
-            pd.melt(pd.crosstab(gss_clean[color], gss_clean[x]).reset_index(), id_vars = color, value_vars = ['very dissatisfied', 'a little dissat', 'mod. satisfied', 'very satisfied']),
+            pd.melt(pd.crosstab(options2[color], options1[x]).reset_index(), id_vars = color, value_vars = ['very dissatisfied', 'a little dissat', 'mod. satisfied', 'very satisfied']),
             x = x, y = 'value', color = color,
             labels = {x : x, 'value' : 'Frequency of Responses'},
             barmode = 'group')
@@ -212,7 +208,7 @@ def make_figure(x, color):
     ## {'strongly disagree', 'disagree', 'agree', 'strongly agree'} = relationship, male_breadwinner, child_suffer
     elif x in ['relationship', 'male_breadwinner', 'child_suffer']:
         bar = px.bar(
-            pd.melt(pd.crosstab(gss_clean[color], gss_clean[x]).reset_index(), id_vars = color, value_vars = ['strongly disagree', 'disagree', 'agree', 'strongly agree']),
+            pd.melt(pd.crosstab(options2[color], options1[x]).reset_index(), id_vars = color, value_vars = ['strongly disagree', 'disagree', 'agree', 'strongly agree']),
             x = x, y = 'value', color = color,
             labels = {x : x, 'value' : 'Frequency of Responses'},
             barmode = 'group')    
@@ -220,7 +216,7 @@ def make_figure(x, color):
     ## {'disagree', 'agree'} = men_bettersuited
     elif x in ['men_bettersuited']:
         bar = px.bar(
-            pd.melt(pd.crosstab(gss_clean[color], gss_clean[x]).reset_index(), id_vars = color, value_vars = ['disagree', 'agree']),
+            pd.melt(pd.crosstab(options2[color], options1[x]).reset_index(), id_vars = color, value_vars = ['disagree', 'agree']),
             x = x, y = 'value', color = color,
             labels = {x : x, 'value' : 'Frequency of Responses'},
             barmode = 'group')
@@ -228,7 +224,7 @@ def make_figure(x, color):
     ## {'strongly disagree', 'disagree', 'neither agree nor disagree', 'agree', 'strongly agree'} = men_overwork
     else:
         bar = px.bar(
-            pd.melt(pd.crosstab(gss_clean[color], gss_clean[x]).reset_index(), id_vars = color, value_vars = ['strongly disagree', 'disagree', 'neither agree nor disagree', 'agree', 'strongly agree']),
+            pd.melt(pd.crosstab(options2[color], options1[x]).reset_index(), id_vars = color, value_vars = ['strongly disagree', 'disagree', 'neither agree nor disagree', 'agree', 'strongly agree']),
             x = x, y = 'value', color = color,
             labels = {x : x, 'value' : 'Frequency of Responses'},
             barmode = 'group')    
@@ -236,4 +232,4 @@ def make_figure(x, color):
     return bar
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug = True)

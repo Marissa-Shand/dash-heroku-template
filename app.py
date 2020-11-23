@@ -119,6 +119,7 @@ fig_box_educ = px.box(gss_clean, x = 'education', y = 'sex', color = 'sex',
 fig_box_educ.update_layout(showlegend = False)
 
 app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
+server = app.server
 
 app.layout = html.Div(
     [

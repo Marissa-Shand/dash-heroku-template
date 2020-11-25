@@ -189,7 +189,8 @@ app.layout = html.Div(
         
         dcc.Graph(figure=fig_box_facet)
         
-    ]
+    ], style={'background-color':'rgba(255, 182, 193, 0.3)'}
+
 )
 
 @app.callback(Output(component_id="graph",component_property="figure"),

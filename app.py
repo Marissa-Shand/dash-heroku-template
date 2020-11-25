@@ -5,7 +5,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import dash
-import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
@@ -65,6 +64,7 @@ fig_bar = px.bar(gss_breadwinner, x = 'male_breadwinner', y = 'value', color = '
             color_discrete_map = {'male':'green', 'female':'mediumpurple'})
 fig_bar.update_layout(showlegend = True)
 fig_bar.update(layout = dict(title = dict(x = 0.5)))
+fig_bar.update_layout(paper_bgcolor = 'rgb(173, 164, 195)')
 
 ## Create an interactive scatterplot
 fig_scatter = px.scatter(gss_clean, x = 'job_prestige', y = 'income', color = 'sex',
@@ -73,18 +73,31 @@ fig_scatter = px.scatter(gss_clean, x = 'job_prestige', y = 'income', color = 's
                  hover_data = ['education', 'socioeconomic_index'],
                  color_discrete_map = {'male':'green', 'female':'mediumpurple'})
 fig_scatter.update(layout = dict(title = dict(x = 0.5)))
+fig_scatter.update_layout(paper_bgcolor = 'rgb(173, 164, 195)')
 
 ## Create an interactive box plot for income of men and women
 fig_box_income = px.box(gss_clean, x = 'income', y = 'sex', color = 'sex',
              labels = {'income': 'Income', 'sex': ''},
-             color_discrete_map = {'male':'green', 'female':'mediumpurple'})
+             color_discrete_map = {'male':'green', 'female':'mediumpurple'},
+                       height = 400)
 fig_box_income.update_layout(showlegend = False)
+fig_box_income.update_layout(paper_bgcolor = 'rgb(173, 164, 195)')
+
+## Create an interactive box plot for education of men and women
+fig_box_educ = px.box(gss_clean, x = 'education', y = 'sex', color = 'sex',
+             labels = {'education': 'Years of Education', 'sex': ''},
+             color_discrete_map = {'male':'green', 'female':'mediumpurple'},
+                     height = 400)
+fig_box_educ.update_layout(showlegend = False)
+fig_box_educ.update_layout(paper_bgcolor = 'rgb(173, 164, 195)')
 
 ## Create an interactive box plot for job_prestige of men and women
 fig_box_prestige = px.box(gss_clean, x = 'job_prestige', y = 'sex', color = 'sex',
              labels = {'job_prestige': 'Occupational Prestige', 'sex': ''},
-             color_discrete_map = {'male':'green', 'female':'mediumpurple'})
+             color_discrete_map = {'male':'green', 'female':'mediumpurple'},
+                         height = 400)
 fig_box_prestige.update_layout(showlegend = False)
+fig_box_prestige.update_layout(paper_bgcolor = 'rgb(173, 164, 195)')
 
 ## Create a new dataframe that contains only income, sex, and job_prestige
 gss_facet = gss_clean[['income', 'sex', 'job_prestige']]
@@ -102,6 +115,7 @@ fig_box_facet = px.box(gss_facet, x = 'income', y = 'sex', color = 'sex',
               labels = {'income': 'Income', 'sex': ''})
 fig_box_facet.update_layout(showlegend = False)
 fig_box_facet.for_each_annotation(lambda a: a.update(text = a.text.replace("prestige_bins=", "")))
+fig_box_facet.update_layout(paper_bgcolor = 'rgb(173, 164, 195)')
 
 ## Options for interative bar plot
 options1 = gss_clean[['satjob', 'relationship', 'male_breadwinner', 'men_bettersuited', 'child_suffer', 'men_overwork']]
@@ -113,11 +127,7 @@ options2 = options2.assign(education = pd.cut(gss_clean['education'],
                                                 bins = [-0.1, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 100.0],
                                                 labels = ('10 years or fewer', '11 years', '12 years', '13 years', '14 years', '15 years', '16 years', 'More than 16 years')))
 
-## Create an interactive box plot for education of men and women
-fig_box_educ = px.box(gss_clean, x = 'education', y = 'sex', color = 'sex',
-             labels = {'education': 'Years of Education', 'sex': ''},
-             color_discrete_map = {'male':'green', 'female':'mediumpurple'}, height = 400)
-fig_box_educ.update_layout(showlegend = False)
+
 
 app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
 server = app.server
@@ -167,7 +177,9 @@ app.layout = html.Div(
             
             html.H3("Distribution of Income by Sex"),
             
-            dcc.Graph(figure=fig_box_income)
+            dcc.Graph(figure=fig_box_income),
+            
+            dcc.Markdown(children = 'Looking at these graphs, we can see that men have higher salaries than women. We want to investigate whether this difference is due to the fact that men have jobs with higher occupational prestige than women or if they have a higher educational attaintment than women. Looking at the distribution of educational attainment by sex, we can see that the range of values is very similar for both men and women, but women have a higher median educational attainment than women. Looking at the distribution of occupational pretsige by sex we can see that the range of occupational prestige is about the same for both men and women, but the median occupational prestige is slightly higher for women than men. The 75th percentile is about the same for men and women, however, the 25th percentile is lower for women than men, this will lead to men and women having roughly the same average occupational prestige. These graphs shows that the difference in salaries for men and women is not due to the fact that men have jobs with higher occupational prestige than women or because men have more years of education, but something else.'),
             
         ], style = {'height': 1000, 'width':'50%', 'float':'left'}),
         
@@ -181,16 +193,13 @@ app.layout = html.Div(
             
             dcc.Graph(figure=fig_box_prestige),
             
-            
-            
-        ], style = {'height': 1000, 'width':'50%', 'float':'right'}),
+        ], style = {'height': 1000, 'width':'48%', 'float':'right'}),
         
         html.H3("Distribution of Income for Different Levels of Job Prestige by Sex"),
         
         dcc.Graph(figure=fig_box_facet)
         
-    ], style={'background-color':'rgba(255, 182, 193, 0.3)'}
-
+    ], style={'background-color':'rgb(173, 164, 195)'}
 )
 
 @app.callback(Output(component_id="graph",component_property="figure"),
@@ -231,7 +240,8 @@ def make_figure(x, color):
             labels = {x : x, 'value' : 'Frequency of Responses'},
             barmode = 'group')    
     
+    bar.update_layout(paper_bgcolor = 'rgb(173, 164, 195)')
     return bar
 
 if __name__ == '__main__':
-    app.run_server(debug = True)
+    app.run_server(debug=True, port=8046)

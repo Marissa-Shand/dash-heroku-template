@@ -181,7 +181,7 @@ app.layout = html.Div(
             
             dcc.Markdown(children = 'Looking at these graphs, we can see that men have higher salaries than women. We want to investigate whether this difference is due to the fact that men have jobs with higher occupational prestige than women or if they have a higher educational attaintment than women. Looking at the distribution of educational attainment by sex, we can see that the range of values is very similar for both men and women, but women have a higher median educational attainment than women. Looking at the distribution of occupational pretsige by sex we can see that the range of occupational prestige is about the same for both men and women, but the median occupational prestige is slightly higher for women than men. The 75th percentile is about the same for men and women, however, the 25th percentile is lower for women than men, this will lead to men and women having roughly the same average occupational prestige. These graphs shows that the difference in salaries for men and women is not due to the fact that men have jobs with higher occupational prestige than women or because men have more years of education, but something else.'),
             
-        ], style = {'height': 1000, 'width':'50%', 'float':'left'}),
+        ], style = {'height': 1000, 'width':'48%', 'float':'left'}),
         
         html.Div([
             

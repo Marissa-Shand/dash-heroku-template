@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import dash
+import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
@@ -118,7 +119,7 @@ fig_box_educ = px.box(gss_clean, x = 'education', y = 'sex', color = 'sex',
              color_discrete_map = {'male':'green', 'female':'mediumpurple'}, height = 400)
 fig_box_educ.update_layout(showlegend = False)
 
-app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
+app = dash.Dash(__name__, external_stylesheets = [dbc.themes.CYBORG])
 server = app.server
 
 app.layout = html.Div(

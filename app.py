@@ -119,7 +119,7 @@ fig_box_educ = px.box(gss_clean, x = 'education', y = 'sex', color = 'sex',
              color_discrete_map = {'male':'green', 'female':'mediumpurple'}, height = 400)
 fig_box_educ.update_layout(showlegend = False)
 
-app = dash.Dash(__name__, external_stylesheets = [dbc.themes.CYBORG])
+app = dash.Dash(__name__, external_stylesheets = external_stylesheets)
 server = app.server
 
 app.layout = html.Div(
